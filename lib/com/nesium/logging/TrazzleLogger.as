@@ -47,7 +47,7 @@ package com.nesium.logging
 		private static var g_monitorTimer:Timer;
 		private static var g_fileObservers:Object;
 		
-		
+		protected var queuedMessages:Array = new Array();
 		
 		//*****************************************************************************************
 		//*                                     Public Methods                                    *
@@ -59,7 +59,6 @@ package com.nesium.logging
 			g_gateway.connectToRemote();
 			g_fileObservers = {};
 		}
-		
 		
 		public function setParams(theStage:Stage, title:String):void
 		{
@@ -75,6 +74,12 @@ package com.nesium.logging
 			params.marketingVersion = k_marketingVersion;
 			params.player = {isDebugger:Capabilities.isDebugger, version:Capabilities.version};
 			g_gateway.invokeRemoteService('CoreService', 'setConnectionParams', params);
+
+			for each(var message:Array in queuedMessages)
+			{
+				send(message[0], message[1]);
+			}
+			queuedMessages = null;
 		}
 		
 		public function stage():Stage
@@ -86,10 +91,15 @@ package com.nesium.logging
 		{
 			if (!g_stage)
 			{
-				throwNotInitedError();
+				queueMessage(msg, stackIndex);
 				return;
 			}
 			send(msg, stackIndex);
+		}
+		
+		protected function queueMessage(msg:String, stackIndex:uint=0):void
+		{
+			this.queuedMessages.push( [ msg, stackIndex ] );
 		}
 		
 		public function beep():void{
