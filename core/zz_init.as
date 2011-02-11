@@ -1,14 +1,29 @@
 package
 {
+	import flash.display.DisplayObject;
 	import flash.display.Stage;
+	import flash.events.Event;
 	import flash.utils.getDefinitionByName;
-	public function zz_init(theStage:Stage, title:String):void
+	
+	import com.nesium.logging.TrazzleLogger;
+
+	public function zz_init(displayObject:DisplayObject, title:String):void
 	{
-		try
+		var logger:TrazzleLogger = new TrazzleLogger();
+
+		if(displayObject.stage == null)
 		{
-			var logger:Class = getDefinitionByName('com.nesium.logging.TrazzleLogger') as Class;
-			logger['instance']().setParams(theStage, title);
+			displayObject.addEventListener(Event.ADDED_TO_STAGE, function(e:Event):void
+			{
+				logger.setParams(e.target.stage, title)
+			},
+			false,
+			0,
+			true);
 		}
-		catch (e:Error) {}
+		else
+		{
+			logger.setParams(displayObject.stage, title)
+		}
 	}
 }
